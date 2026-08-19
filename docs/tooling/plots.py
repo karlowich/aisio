@@ -327,8 +327,11 @@ def lineplot(artifacts, output, driver, xaxis="ncpus", colormap=None):
     ax.set_ylim(0, ymax * 1.15)
 
     # Legends sit on the half of the axes the series leave free: a plot whose
-    # data hugs the bottom gets them on top.
+    # data hugs the bottom gets them on top. A figure whose free space is a
+    # corner rather than a half names the placement itself.
     vpos = "upper" if data_max < 0.5 * ax.get_ylim()[1] else "lower"
+    rooflines_loc = cfg.get("legend_rooflines", f"{vpos} left")
+    series_loc = cfg.get("legend_series", f"{vpos} right")
 
     handles, labels_ = ax.get_legend_handles_labels()
     if ax2 is not None:
@@ -339,11 +342,11 @@ def lineplot(artifacts, output, driver, xaxis="ncpus", colormap=None):
     stack_idx = [i for i in range(len(labels_)) if i not in line_idx]
 
     leg1 = ax.legend([handles[i] for i in line_idx], [labels_[i] for i in line_idx],
-                     loc=f"{vpos} left", fontsize=8, framealpha=0.9, edgecolor="#cccccc")
+                     loc=rooflines_loc, fontsize=8, framealpha=0.9, edgecolor="#cccccc")
     ax.add_artist(leg1)
 
     ax.legend([handles[i] for i in reversed(stack_idx)], [labels_[i] for i in reversed(stack_idx)],
-              loc=f"{vpos} right", fontsize=8, framealpha=0.9, edgecolor="#cccccc")
+              loc=series_loc, fontsize=8, framealpha=0.9, edgecolor="#cccccc")
 
     plt.tight_layout()
     fig.subplots_adjust(top=0.83)
