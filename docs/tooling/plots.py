@@ -5,6 +5,7 @@
 import re
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import LogLocator, ScalarFormatter
 import tarfile
 import tempfile
 import yaml
@@ -324,7 +325,20 @@ def lineplot(artifacts, output, driver, xaxis="ncpus", colormap=None):
         ax.axhline(y=val, color=r["color"], linestyle=r["style"], linewidth=1.5,
                 label=f"{r['name']} ({roofline_label(val)})", zorder=1)
         ymax = max(ymax, val)
-    ax.set_ylim(0, ymax * 1.15)
+
+    # A quantity spanning orders of magnitude is charted on a log axis, where a
+    # constant factor between points reads as a constant step wherever it falls.
+    # Its decades are labelled as plain numbers, in the unit the axis is named
+    # for, and it takes the limits matplotlib derives from the data since a log
+    # axis cannot start at zero.
+    if cfg.get("yscale") == "log":
+        ax.set_yscale("log")
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+        ax.yaxis.set_minor_locator(LogLocator(base=10, subs=(0.2, 0.5)))
+        ax.yaxis.set_minor_formatter(ScalarFormatter())
+        ax.tick_params(axis="y", which="minor", labelsize=7)
+    else:
+        ax.set_ylim(0, ymax * 1.15)
 
     # Legends sit on the half of the axes the series leave free: a plot whose
     # data hugs the bottom gets them on top. A figure whose free space is a
